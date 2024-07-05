@@ -1,126 +1,181 @@
 import type { NextPage } from "next";
 
-import { Field, FieldProps, Form, Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import { useRouter } from "next/router";
-// import { useState } from "react";
-// import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 import * as Yup from "yup";
+import { BASE_URL, calculateAge } from "../utils";
+import { useEffect, useState } from "react";
 
 const Home: NextPage = () => {
   const { push } = useRouter();
+  const [country, setCountry] = useState([]);
+  const [state, setState] = useState([]);
+  const [city, setCity] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await fetch(`${BASE_URL}/country`);
+        const res = await result.json();
+
+        setCountry(res?.success?.data?.results);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+
+    return () => {};
+  }, []);
+
   const inputArray = [
     {
-      name: "E-Mail",
+      name: "email",
       key: 1,
-
       label: `Email *`,
       initialValue: "",
-      // options: projectType,
       type: "text",
-      // loading: projectLoading,
       className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string()
         .required("Field is required")
         .email("Email formate is wrong."),
     },
     {
-      name: "First Name",
+      name: "firstName",
       key: 2,
-
       label: `First Name *`,
       initialValue: "",
-      // options: projectType,
       type: "text",
-      // loading: projectLoading,
-      className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
     {
       key: 3,
-      name: "Last Name",
+      name: "lastName",
       label: `Last Name *`,
       initialValue: "",
-      // options: projectType,
       type: "text",
-      // loading: projectLoading,
       className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
 
     {
       key: 4,
-      name: "Country",
+      name: "country",
       label: `Country *`,
       initialValue: "",
-      options: [],
+      options: [
+        {
+          label: "--select--",
+          value: "",
+        },
+        ...country?.map((item: any) => ({
+          label: item?.title,
+          value: item?._id,
+        })),
+      ],
       type: "select",
-      // loading: projectLoading,
       className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
     {
       key: 5,
-      name: "State",
+      name: "state",
       label: `State *`,
       initialValue: "",
-      options: [],
+      options: [
+        {
+          label: "--select--",
+          value: "",
+        },
+        ...state?.map((item: any) => ({
+          label: item?.title,
+          value: item?._id,
+        })),
+      ],
+
       type: "select",
-      // loading: projectLoading,
       className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
     {
       key: 6,
-      name: "City",
+      name: "city",
       label: `City *`,
       initialValue: "",
-      options: [],
+      options: [
+        {
+          label: "--select--",
+          value: "",
+        },
+        ...(city?.map((item: any) => ({
+          label: item?.title,
+          value: item?._id,
+        })) || []),
+      ],
+
       type: "select",
-      // loading: projectLoading,
       className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
     {
       key: 7,
-      name: "Gender",
+      name: "gender",
       label: `Gender *`,
       initialValue: "",
       options: [
         {
+          label: "--select--",
+          value: "",
+        },
+        {
           label: "Male",
-          value: "Male",
+          value: "MALE",
         },
         {
           label: "Female",
-          value: "Female",
+          value: "FEMALE",
         },
       ],
       type: "select",
-      // loading: projectLoading,
-      // className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
     {
       key: 8,
-      name: "Date of Birth",
+      name: "dateOfBirth",
       label: `Date of Birth *`,
       initialValue: "",
 
       type: "date",
-      // loading: projectLoading,
-      // className: "col-span-12 lg:col-span-12",
-      validationSchema: Yup.string().required("Field is required"),
+      validationSchema: Yup.date()
+        .required("Field is required")
+        .max(
+          new Date(
+            new Date().getFullYear() - 14,
+            new Date().getMonth(),
+            new Date().getDate()
+          ),
+          "Date of birth Must be older than 14 years"
+        )
+        .min(
+          new Date(
+            new Date().getFullYear() - 99,
+            new Date().getMonth(),
+            new Date().getDate()
+          ),
+          "Date of birth Less than 99 years"
+        )
+        .test("is-valid-date", "Invalid date format", function (value) {
+          return !isNaN(new Date(value).getTime());
+        }),
     },
     {
       key: 9,
-      name: "Age",
+      name: "age",
       label: `Age`,
       initialValue: "",
 
       type: "text",
       visibility: false,
-      // loading: projectLoading,
-      // className: "col-span-12 lg:col-span-12",
       validationSchema: Yup.string().required("Field is required"),
     },
   ];
@@ -141,40 +196,91 @@ const Home: NextPage = () => {
       },
       {}
     );
-  const handleOperation = async (values: any, props: any) => {
-    // Swal.fire(`Info`, `Work in progress`, `info`);
-    // return;
-    // try {
-    //   const res = await change(`bd02/bd02-initiation`, {
-    //     body: {
-    //       projectId: values?.projectList,
-    //     },
-    //   });
-    //   if (res?.status !== 200)
-    //     return Swal.fire(
-    //       "Error",
-    //       res?.results?.msg || "Unable to Submit",
-    //       "error"
-    //     );
-    //   setId((pre) => pre + 1);
-    //   Swal.fire(`Success!`, `Task Created Successfully`, `success`);
-    // } catch (error) {
-    //   Swal.fire(
-    //     `Error`,
-    //     error instanceof Error ? error?.message : "Something Went Wrong",
-    //     `error`
-    //   );
-    // }
-  };
 
   const formik = useFormik({
     initialValues,
     validationSchema: Yup.object(validationSchema),
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+    enableReinitialize: true,
+    onSubmit: async (values: any, rest) => {
+      try {
+        console.log(values);
+        values.state = (
+          state?.find((item: any) => item?._id == values?.state) as any
+        )?.title;
+        values.city = (
+          city?.find((item: any) => item?._id == values?.city) as any
+        )?.title;
+        values.country = (
+          country?.find((item: any) => item?._id == values?.country) as any
+        )?.title;
+
+        const result = await fetch(`${BASE_URL}/user/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        });
+
+        const res = await result.json();
+        if (result.status !== 200) throw new Error(res.error?.message);
+        Swal.fire(`success`, res?.message, `success`);
+        rest.resetForm();
+      } catch (error: any) {
+        Swal.fire(`error`, error?.message, `error`);
+      }
     },
   });
-  // console.log(formik?.touched);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await fetch(`${BASE_URL}/country`);
+        const res = await result.json();
+
+        setCountry(res?.success?.data?.results);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+
+    return () => {};
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (!formik?.values?.country) return;
+      try {
+        const result = await fetch(
+          `${BASE_URL}/state?countryId=${formik?.values?.country}`
+        );
+        const res = await result.json();
+
+        setState(res?.success?.data?.results);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+
+    return () => {};
+  }, [formik?.values?.country]);
+  useEffect(() => {
+    (async () => {
+      if (!formik?.values?.state) return;
+      try {
+        const result = await fetch(
+          `${BASE_URL}/city?stateId=${formik?.values?.state}`
+        );
+        const res = await result.json();
+
+        setCity(res?.success?.data?.results);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+
+    return () => {};
+  }, [formik?.values?.state]);
 
   return (
     <div className="flex items-center justify-center w-full p-4 flex-col ">
@@ -224,22 +330,23 @@ const Home: NextPage = () => {
                         default:
                           break;
                       }
-                      formik.handleChange(e);
+
+                      formik.setFieldValue(item?.name, e.target?.value);
                     }}
                     name={item?.name}
                     value={formik?.values?.[item?.name]}
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:capitalize"
                   >
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                    <option>5</option>
+                    {item?.options?.map((option) => (
+                      <option key={option?.label} value={option?.value}>
+                        {option?.label}
+                      </option>
+                    ))}
                   </select>
                   {formik?.touched?.[item?.name] &&
                     formik?.errors?.[item?.name] && (
                       <p className="text-red-600 text-sm">
-                        {formik?.errors?.[item?.name]}
+                        {formik?.errors?.[item?.name] as string}
                       </p>
                     )}
                 </>
@@ -252,7 +359,16 @@ const Home: NextPage = () => {
                     name={item?.name}
                     onBlur={formik.handleBlur}
                     type={item?.type}
-                    onChange={formik.handleChange}
+                    max={new Date().toDateString()}
+                    disabled={Boolean(item?.name == "age")}
+                    onChange={(e) => {
+                      if (item?.name == "dateOfBirth") {
+                        const age = calculateAge(new Date(e?.target?.value));
+                        formik.setFieldValue("age", age);
+                      }
+
+                      formik.handleChange(e);
+                    }}
                     value={formik?.values?.[item?.name]}
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:capitalize"
                     placeholder={item?.label}
@@ -260,7 +376,7 @@ const Home: NextPage = () => {
                   {formik?.touched?.[item?.name] &&
                     formik?.errors?.[item?.name] && (
                       <p className="text-red-600 text-sm">
-                        {formik?.errors?.[item?.name]}
+                        {formik?.errors?.[item?.name] as string}
                       </p>
                     )}
                 </>
