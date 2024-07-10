@@ -33,7 +33,7 @@ export default function view() {
         </button>
       </div>
       {/*  */}
-      <div className="grid grid-cols-5 gap-4 mt-4">
+      <div className="grid lg:grid-cols-5 md:grid-cols-3  grid-cols-1 gap-4 mt-4">
         {userData?.map((item: any) => {
           return (
             <div className="max-h-[340px] min-h-[280px] bg-blue-700/30 backdrop-blur-md border border-white/10 rounded-lg p-6 shadow-lg max-w-sm min-w-full mx-auto">
